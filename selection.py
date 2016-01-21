@@ -1,9 +1,9 @@
-from random import uniform
+from random import randrange,uniform
 #import matplotlib.pyplot as plt #Only if Plotting
-import operator
+#import operator
 import numpy as np
 
-POPULATION_SIZE = 30
+POPULATION_SIZE = 31
 LENGTH_OF_BIT_STRING = 32
 LOWER_LIMIT = 0
 UPPER_LIMIT = 100
@@ -12,12 +12,10 @@ def fitness(x):
     #currently set to x^2, later this will be inputted by the user
     return x*x
 
-fitness_list = []
 population = []
 for j in range(POPULATION_SIZE):
     sample = []
-    for i in range(LENGTH_OF_BIT_STRING): #problem with this is that as we increase our bit string sizes, our integers will also increase in value
-                                          #Maybe this is because of a small sample set
+    for i in range(LENGTH_OF_BIT_STRING):
         if(uniform(0,1)<0.5):
             sample.append('0')#builds a list of strings
         else:
@@ -25,38 +23,37 @@ for j in range(POPULATION_SIZE):
     stringified_sample = ''.join(sample)#converts list of strings into string
     population.append(int(stringified_sample,2))#converts string into binary and adds to our population set
 #We now have a population of POPULATION_SIZE
-print(population)
+#print(population)
+type = [('chromosome',int), ('fitness',int),('flag',bool)]
+pop_fit = np.zeros((POPULATION_SIZE,),dtype = type)#Create a 2D array to store population and fitness
 
 #Scale to enter Limits
 for i in range(0,POPULATION_SIZE):
     population[i] *= LOWER_LIMIT+((UPPER_LIMIT-LOWER_LIMIT)/float(2**LENGTH_OF_BIT_STRING-1))
     population[i] = int(population[i])
-print(population)
+    pop_fit[i] = (population[i],fitness(int(population[i])),False)
+pop_fit = np.sort(pop_fit,order='fitness')[::-1]
+print(pop_fit)
 
-#for val in population:
-#    val *= LOWER_LIMIT+((UPPER_LIMIT-LOWER_LIMIT)/float(2**LENGTH_OF_BIT_STRING-1))
-#    scaled_population.append(int(val))
-#    fitness_list.append(fitness(int(val)))
+next_gen = []
+matingpool=[]
 
-#Here I have my population and fitness in a dictionary for easy access and reference.
-#population_and_fitness = dict(zip(scaled_population,fitness_list))
+#----SELECTION-----#
+next_gen.append(pop_fit[0])#elitism, to pick the best fitness
+pop_fit[0]['flag'] = True
+while len(matingpool)<POPULATION_SIZE-2:
+    temp = randrange(1,POPULATION_SIZE-1)
+    if(pop_fit[temp]['flag']==False):
+        matingpool.append(pop_fit[temp])
+        pop_fit[temp]['flag'] = True
 
-#print(scaled_population)
-#print(population_and_fitness)
-
-#matingpool = []
-#        -----SELECTION--------
-#key, value = max(population_and_fitness.iteritems(), key=lambda x:x[1])
-#print(key,value)
-#matingpool.append(key)
-#del population_and_fitness[key]
-#print(population_and_fitness)
+print(matingpool)
+#--CROSSOVER THE MATING POOL AND WE GET OUR NEXT GENERATION
 
 
 
-#print(population_and_fitness)
-#Now our population should be scaled according to our limits
-#print(population)
+
+
 #plt.scatter(range(POPULATION_SIZE),scaled_population)
 #plt.scatter(range(POPULATION_SIZE),fitness_list)
 #plt.show()
