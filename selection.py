@@ -1,6 +1,6 @@
 from random import randrange,uniform
+
 #import matplotlib.pyplot as plt #Only if Plotting
-#import operator
 import numpy as np
 
 POPULATION_SIZE = 31
@@ -8,6 +8,7 @@ LENGTH_OF_BIT_STRING = 32
 LOWER_LIMIT = 0
 UPPER_LIMIT = 100
 
+#TODO MODULARIZE EVERYTHING
 def fitness(x):
     #currently set to x^2, later this will be inputted by the user
     return x*x
@@ -25,13 +26,13 @@ for j in range(POPULATION_SIZE):
 #We now have a population of POPULATION_SIZE
 #print(population)
 type = [('chromosome',int), ('fitness',int),('flag',bool)]
-pop_fit = np.zeros((POPULATION_SIZE,),dtype = type)#Create a 2D array to store population and fitness
+pop_fit = np.zeros((POPULATION_SIZE,),dtype = type)#Create a structured 1D array to store population and fitness
 
 #Scale to enter Limits
 for i in range(0,POPULATION_SIZE):
     population[i] *= LOWER_LIMIT+((UPPER_LIMIT-LOWER_LIMIT)/float(2**LENGTH_OF_BIT_STRING-1))
     population[i] = int(population[i])
-    pop_fit[i] = (population[i],fitness(int(population[i])),False)
+    pop_fit[i] = (population[i],fitness(population[i]),False)
 pop_fit = np.sort(pop_fit,order='fitness')[::-1]
 print(pop_fit)
 
@@ -46,6 +47,7 @@ while len(matingpool)<POPULATION_SIZE-2:
     if(pop_fit[temp]['flag']==False):
         matingpool.append(pop_fit[temp])
         pop_fit[temp]['flag'] = True
+#TODO MAKE MATING POOL IN PLACE SO THAT WE USE LESS MEMORY PER GENERATION
 
 print(matingpool)
 #--CROSSOVER THE MATING POOL AND WE GET OUR NEXT GENERATION
