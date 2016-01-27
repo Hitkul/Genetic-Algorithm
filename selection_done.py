@@ -8,7 +8,6 @@ LENGTH_OF_BIT_STRING = 32
 LOWER_LIMIT = 0
 UPPER_LIMIT = 100
 crossover_probability = 0.5
-Mutation_probability = 0.05
 
 #TODO MODULARIZE EVERYTHING
 def fitness(x):
@@ -37,7 +36,7 @@ for i in range(0,POPULATION_SIZE):
     pop_fit[i] = (population[i],fitness(population[i]),False)
 pop_fit = np.sort(pop_fit,order='fitness')[::-1]
 print("----------------population----------------")
-print(pop_fit['chromosome'])
+print(pop_fit)
 
 next_gen = []
 matingpool=[]
@@ -50,42 +49,27 @@ while len(matingpool)<POPULATION_SIZE-1:
     if(pop_fit[temp]['flag']==False):
         matingpool.append(pop_fit[temp])
         pop_fit[temp]['flag'] = True
+#TODO MAKE MATING POOL IN PLACE SO THAT WE USE LESS MEMORY PER GENERATION
+print("----------------mating pool----------------")
+print(matingpool)
 
-#print("----------------mating pool----------------")
-#print(matingpool)
 
 #--CROSSOVER THE MATING POOL AND WE GET OUR NEXT GENERATION
 for i in range(0,POPULATION_SIZE-1,2):
     for j in range(7):  
         if(uniform(0,1)>crossover_probability):
-            if((matingpool[i]['chromosome'] & 2**(6-j))!=(matingpool[i+1]['chromosome'] & 2**(6-j))): #checking for ineqality of bits
-                matingpool[i]['chromosome'] = matingpool[i]['chromosome']^2**(6-j) #swapping bits
-                matingpool[i+1]['chromosome'] = matingpool[i+1]['chromosome']^2**(6-j) #swapping bits
+            if((matingpool[i]['chromosome'] & 2**(7-j))!=(matingpool[i+1]['chromosome'] & 2**(7-j))): #checking for ineqality of bits
+                matingpool[i]['chromosome'] = matingpool[i]['chromosome']^2**(7-j) #swapping bits
+                matingpool[i+1]['chromosome'] = matingpool[i+1]['chromosome']^2**(7-j) #swapping bits
     next_gen.append(matingpool[i]['chromosome'])
     next_gen.append(matingpool[i+1]['chromosome'])
 
-print("----------------next gen----------------")
-print(next_gen)
-
-# -----------------------------MUTATION---------------------------
-for i in range(POPULATION_SIZE):
-    for j in range(7):
-        if(uniform(0,1)<Mutation_probability):
-            next_gen[i]=next_gen[i]^2**(6-j)
-
-#remapping into range to correct overflow produced during mutation
-for i in range(POPULATION_SIZE):
+for i in range(1,POPULATION_SIZE):
     next_gen[i] *= LOWER_LIMIT+((UPPER_LIMIT-LOWER_LIMIT)/float(2**7-1))
     next_gen[i] = int(next_gen[i])
-
 next_gen.sort()
-next_gen.reverse()
-print("----------------next gen after mutation----------------")
+print("----------------next gen----------------")
 print(next_gen)
-
-#TODO terminating condition 
-
-
 #plt.scatter(range(POPULATION_SIZE),scaled_population)
 #plt.scatter(range(POPULATION_SIZE),fitness_list)
 #plt.show()
