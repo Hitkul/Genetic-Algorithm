@@ -2,10 +2,9 @@ from random import randrange,uniform
 import matplotlib.pyplot as plt
 import numpy as np
 import math as m
- 
- 
- # TODO auto generate of list of lists and data type for np arrays
- # TODO fix scaling of negative limits  
+
+
+ # TODO MOGA
 #~~~~~~~~~~~~~~~~~~~~~~FUNCTIONS~~~~~~~~~~~~~~~~~~~~
 def fitness(x,y):
     x=x/float(precsion_level)
@@ -25,38 +24,71 @@ def population_generation(population):
         stringified_sample = ''.join(sample)#converts list of strings into string
         population.append(int(stringified_sample,2))#converts string into binary and adds to our population set
 
-def scale(start_point,UPPER_LIMIT,LOWER_LIMIT,POPULATION_SIZE,LENGTH_OF_BIT_STRING,population):
+def scale(start_point,UPPER_LIMIT,LOWER_LIMIT,POPULATION_SIZE,UPPER_LIMIT_current,LOWER_LIMIT_current,population):
     for i in range(start_point,POPULATION_SIZE):
-        population[i] = LOWER_LIMIT*precsion_level+population[i]*((UPPER_LIMIT*precsion_level-LOWER_LIMIT*precsion_level)/float(2**LENGTH_OF_BIT_STRING-1))
+        #population[i] = LOWER_LIMIT*precsion_level+population[i]*((UPPER_LIMIT*precsion_level-LOWER_LIMIT*precsion_level)/float(2**LENGTH_OF_BIT_STRING-1))
+        population[i] = (((population[i] - LOWER_LIMIT_current) * (UPPER_LIMIT*precsion_level - LOWER_LIMIT*precsion_level)) / (UPPER_LIMIT_current - LOWER_LIMIT_current)) + LOWER_LIMIT*precsion_level
         population[i] = int(population[i])
 
 def get_fitness():
-    for i in range(0,POPULATION_SIZE):        
+    for i in range(0,POPULATION_SIZE):
         pop_fit[i] = (population[0][i],population[1][i],fitness(population[0][i],population[1][i]),False)
 
 def selection():
-    while len(matingpool[0])<POPULATION_SIZE-1:
-        temp = randrange(1,POPULATION_SIZE)
+    while len(matingpool[0])<crossover_ratio:
+        temp = randrange(3,POPULATION_SIZE)
         if(pop_fit[temp]['flag']==False):
             for i in range(no_of_variables):
                 matingpool[i].append(pop_fit[temp][i])
                 pop_fit[temp]['flag'] = True
 
-def crossover(matingpool,bit_length,next_gen):
-    for i in range(0,POPULATION_SIZE-1,2):
-        for j in range(bit_length):  
-            if(uniform(0,1)>crossover_probability):
-                if((matingpool[i] & 2**((bit_length-1)-j))!=(matingpool[i+1] & 2**((bit_length-1)-j))): #checking for inequality of bits
-                    matingpool[i] = matingpool[i]^2**((bit_length-1)-j) #swapping bits
-                    matingpool[i+1] = matingpool[i+1]^2**((bit_length-1)-j) #swapping bits
-        next_gen.append(matingpool[i])
-        next_gen.append(matingpool[i+1])
+def crossover(matingpool,bit_length,next_gen,check):
+    #print 'check is ' + str(check)
+    for i in range(0,crossover_ratio,2):
+        counter = 0
+        breaker = True
+        temp1=matingpool[i]
+        temp2=matingpool[i+1]
+    #    print str(temp1) + '|' + str(temp2)
+        while (counter<100) and (breaker==True):
+            #print 'counter is '+ str(counter)
 
-def mutation(next_gen,bit_length):
-    for i in range(1,POPULATION_SIZE):
+            for j in range(bit_length):
+                if(uniform(0,1)>crossover_probability):
+                    if((temp1 & 2**((bit_length-1)-j))!=(temp2 & 2**((bit_length-1)-j))): #checking for inequality of bits
+                        temp1 = temp1^2**((bit_length-1)-j) #swapping bits
+                        temp2 = temp2^2**((bit_length-1)-j) #swapping bits
+
+            if check == 0:
+                fitness_after1 = fitness(temp1,max_values[check])
+                fitness_after2 = fitness(temp2,max_values[check])
+                fitness_before1 = fitness(matingpool[i],max_values[check])
+                fitness_before2 = fitness(matingpool[i+1],max_values[check])
+
+            if check == 1:
+                fitness_after1 = fitness(max_values[check],temp1)
+                fitness_after2 = fitness(max_values[check],temp2)
+                fitness_before1 = fitness(max_values[check],matingpool[i])
+                fitness_before2 = fitness(max_values[check],matingpool[i+1])
+
+            if (fitness_after1>fitness_before1) and (fitness_after2>fitness_before2):
+                #print 'fitness increased'
+                next_gen.append(temp1)
+                next_gen.append(temp2)
+            #    print 'improved' + str(temp1) + '|' + str(temp2)
+                breaker = False
+            counter+=1
+
+        if counter == 100:
+            next_gen.append(matingpool[i])
+            next_gen.append(matingpool[i+1])
+        #    print 'same' + str(matingpool[i]) + '|' + str(matingpool[i+1])
+
+def mutation(left_for_mutation,bit_length):
+    for i in range(mutation_ratio):
         for j in range(bit_length):
             if(uniform(0,1)<Mutation_probability):
-                next_gen[i]=next_gen[i]^2**((bit_length-1)-j)
+                left_for_mutation[i]=left_for_mutation[i]^2**((bit_length-1)-j)
 
 def get_solution():
     for i in range(POPULATION_SIZE):
@@ -66,15 +98,28 @@ def get_solution():
 def get_bit_length():
     for i in range(no_of_variables):
         bit_length.append(len(bin(UPPER_LIMIT[i]*precsion_level))-2)
-        
+
 #~~~~~~~~~~~~~~~~~~~~~VARIABLES~~~~~~~~~~~~~~~~~
 POPULATION_SIZE = 51
 LENGTH_OF_BIT_STRING = 32
 crossover_probability = 0.5
 Mutation_probability = 0.01
-LOWER_LIMIT = [0,0]
+reproduction_ratio=(int)(10*POPULATION_SIZE/100)
+if reproduction_ratio == 0:
+    reproduction_ratio = 1
+crossover_ratio= (int)(85*POPULATION_SIZE/100)
+if crossover_ratio % 2 != 0:
+    crossover_ratio -=1;
+mutation_ratio= POPULATION_SIZE - (reproduction_ratio+crossover_ratio)
+########################################################
+print reproduction_ratio
+print crossover_ratio
+print mutation_ratio
+########################################################
+LOWER_LIMIT = [-2,-2]
 UPPER_LIMIT = [2,2]
-no_of_generations =100
+max_values = [1,1]
+no_of_generations =175
 count =0
 fitness_track = []
 fitness_average = []
@@ -93,7 +138,9 @@ matingpool = [matingpool_x,matingpool_y]
 population_x = []
 population_y = []
 population = [population_x,population_y]
-
+left_for_mutation_x = []
+left_for_mutation_y = []
+left_for_mutation = [left_for_mutation_x,left_for_mutation_y]
 #~~~~~~~~~~~~~~~~~~~~MAIN~~~~~~~~~~~~~~~~~~~~~~~~~
 
 get_bit_length()
@@ -103,7 +150,7 @@ for i in range(no_of_variables):
 #We now have a initial population of POPULATION_SIZE
 #Scale population into Limits
 for i in range(no_of_variables):
-    scale(0,UPPER_LIMIT[i],LOWER_LIMIT[i],POPULATION_SIZE,LENGTH_OF_BIT_STRING,population[i])
+    scale(0,UPPER_LIMIT[i],LOWER_LIMIT[i],POPULATION_SIZE,max(population[i]),min(population[i]),population[i])
 
 pop_fit = np.zeros((POPULATION_SIZE,),dtype = type_fitness)#Create a structured 1D array to store population and fitness
 get_fitness()   #get fitness of chromosomes
@@ -114,31 +161,48 @@ get_solution()
 print solution
 
 fitness_track.append(float(pop_fit['fitness'][0]))
-########################################################
+
 fitness_average.append(float(np.average(pop_fit['fitness'])))
-########################################################
+
 while count<=no_of_generations:
+    print 'generation   ' + str(count)
     for i in range(no_of_variables):
         next_gen[i] = []
 
+    #----REPRODUCTION-----#
+    for j in range(reproduction_ratio):
+        for i in range(no_of_variables):
+            next_gen[i].append(pop_fit[j][i])#elitism, to pick the best fitness
+        pop_fit[j]['flag'] = True
+
+
     #----SELECTION-----#
-    for i in range(no_of_variables):
-        next_gen[i].append(pop_fit[0][i])#elitism, to pick the best fitness
-    pop_fit[0]['flag'] = True
-    
     selection()
-    
+
+
     #----CROSSOVER-----#
     for i in range(no_of_variables):
-        crossover(matingpool[i],bit_length[i],next_gen[i])
-    
+        crossover(matingpool[i],bit_length[i],next_gen[i],i)
+
+
     #----MUTATION-----#
+    for i in range(POPULATION_SIZE):
+        if pop_fit[i]['flag']== False:
+            for j in range(no_of_variables):
+                left_for_mutation[j].append(pop_fit[i][j])
+
     for i in range(no_of_variables):
-        mutation(next_gen[i],bit_length[i])
+        mutation(left_for_mutation[i],bit_length[i])
+
+    for i in range(no_of_variables):
+        for j in range(mutation_ratio):
+            next_gen[i].append(left_for_mutation[i][j])
+
+
 
     #remapping into range to correct overflow produced during mutation and crossover
     for i in range(no_of_variables):
-        scale(1,UPPER_LIMIT[i],LOWER_LIMIT[i],POPULATION_SIZE,bit_length[i],next_gen[i])
+        scale(1,UPPER_LIMIT[i],LOWER_LIMIT[i],POPULATION_SIZE,max(next_gen[i]),min(next_gen[i]),next_gen[i])
 
     for i in range(no_of_variables):
         population[i]=next_gen[i]
@@ -158,13 +222,9 @@ print '--------------------------------improvement---------------------'
 print 'initial fitness=%f' %fitness_track[0]
 print 'final fitness=%f' %pop_fit[0]['fitness']
 print 'improvement in fitness = %f' %(pop_fit[0]['fitness']-fitness_track[0])
-print '$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$'
-avg_fitness_inc_count=0
-for i in range(len(fitness_average)-1):
-    if fitness_average[i+1]>fitness_average[i]:
-        avg_fitness_inc_count+=1
 
-print 'avg fitness incresed %d times' %avg_fitness_inc_count
+
 plt.scatter(range(no_of_generations+2),fitness_track)
-#plt.scatter(range(no_of_generations+2),fitness_average)
+plt.show()
+plt.scatter(range(no_of_generations+2),fitness_average)
 plt.show()
