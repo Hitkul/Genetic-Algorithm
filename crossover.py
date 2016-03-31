@@ -5,6 +5,51 @@ import math as m
 
 
  # TODO MOGA
+#~~~~~~~~~~~~~~~~~~~~~VARIABLES~~~~~~~~~~~~~~~~~
+POPULATION_SIZE = 51
+LENGTH_OF_BIT_STRING = 32
+crossover_probability = 0.5
+Mutation_probability = 0.01
+reproduction_ratio=(int)(10*POPULATION_SIZE/100)
+if reproduction_ratio == 0:
+    reproduction_ratio = 1
+crossover_ratio= (int)(85*POPULATION_SIZE/100)
+if crossover_ratio % 2 != 0:
+    crossover_ratio -=1;
+mutation_ratio= POPULATION_SIZE - (reproduction_ratio+crossover_ratio)
+########################################################
+print reproduction_ratio
+print crossover_ratio
+print mutation_ratio
+########################################################
+LOWER_LIMIT = [-2,-2]
+UPPER_LIMIT = [2,2]
+max_values = [0,0]
+no_of_generations =175
+count =0
+fitness_track = []
+fitness_average = []
+bit_length = []
+type_fitness = [('chromosome_x',int),('chromosome_y',int), ('fitness',float),('flag',bool)]
+type_solution = [('x',float),('y',float)]
+
+precsion_level= 100
+no_of_variables = 2
+next_gen_x = []
+next_gen_y = []
+next_gen = [next_gen_x,next_gen_y]
+matingpool_x=[]
+matingpool_y=[]
+matingpool = [matingpool_x,matingpool_y]
+population_x = []
+population_y = []
+population = [population_x,population_y]
+left_for_mutation_x = []
+left_for_mutation_y = []
+left_for_mutation = [left_for_mutation_x,left_for_mutation_y]
+
+
+
 #~~~~~~~~~~~~~~~~~~~~~~FUNCTIONS~~~~~~~~~~~~~~~~~~~~
 def fitness(x,y):
     x=x/float(precsion_level)
@@ -99,48 +144,6 @@ def get_bit_length():
     for i in range(no_of_variables):
         bit_length.append(len(bin(UPPER_LIMIT[i]*precsion_level))-2)
 
-#~~~~~~~~~~~~~~~~~~~~~VARIABLES~~~~~~~~~~~~~~~~~
-POPULATION_SIZE = 51
-LENGTH_OF_BIT_STRING = 32
-crossover_probability = 0.5
-Mutation_probability = 0.01
-reproduction_ratio=(int)(10*POPULATION_SIZE/100)
-if reproduction_ratio == 0:
-    reproduction_ratio = 1
-crossover_ratio= (int)(85*POPULATION_SIZE/100)
-if crossover_ratio % 2 != 0:
-    crossover_ratio -=1;
-mutation_ratio= POPULATION_SIZE - (reproduction_ratio+crossover_ratio)
-########################################################
-print reproduction_ratio
-print crossover_ratio
-print mutation_ratio
-########################################################
-LOWER_LIMIT = [-2,-2]
-UPPER_LIMIT = [2,2]
-max_values = [1,1]
-no_of_generations =175
-count =0
-fitness_track = []
-fitness_average = []
-bit_length = []
-type_fitness = [('chromosome_x',int),('chromosome_y',int), ('fitness',float),('flag',bool)]
-type_solution = [('x',float),('y',float)]
-
-precsion_level= 100
-no_of_variables = 2
-next_gen_x = []
-next_gen_y = []
-next_gen = [next_gen_x,next_gen_y]
-matingpool_x=[]
-matingpool_y=[]
-matingpool = [matingpool_x,matingpool_y]
-population_x = []
-population_y = []
-population = [population_x,population_y]
-left_for_mutation_x = []
-left_for_mutation_y = []
-left_for_mutation = [left_for_mutation_x,left_for_mutation_y]
 #~~~~~~~~~~~~~~~~~~~~MAIN~~~~~~~~~~~~~~~~~~~~~~~~~
 
 get_bit_length()
