@@ -24,7 +24,7 @@ print mutation_ratio
 ########################################################
 LOWER_LIMIT = [-2,-2]
 UPPER_LIMIT = [2,2]
-max_values = [0,0]
+max_values = [1,1]
 no_of_generations =175
 count =0
 fitness_track = []
