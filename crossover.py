@@ -10,6 +10,7 @@ POPULATION_SIZE = 51
 LENGTH_OF_BIT_STRING = 32
 crossover_probability = 0.5
 Mutation_probability = 0.01
+no_of_try_in_hillclimbing = 20
 reproduction_ratio=(int)(10*POPULATION_SIZE/100)
 if reproduction_ratio == 0:
     reproduction_ratio = 1
@@ -22,9 +23,8 @@ print reproduction_ratio
 print crossover_ratio
 print mutation_ratio
 ########################################################
-LOWER_LIMIT = [-2,-2]
-UPPER_LIMIT = [2,2]
-max_values = [1,1]
+LOWER_LIMIT = [0,0]
+UPPER_LIMIT = [3,3]
 no_of_generations =175
 count =0
 fitness_track = []
@@ -54,9 +54,9 @@ left_for_mutation = [left_for_mutation_x,left_for_mutation_y]
 def fitness(x,y):
     x=x/float(precsion_level)
     y=y/float(precsion_level)
-    return 1601-((1-x)*(1-x)+100*(y-x*x)*(y-x*x))
+    #return 1601-((1-x)*(1-x)+100*(y-x*x)*(y-x*x))
     #return 46-(20+x*x+y*y-10*(m.cos(2*m.pi*x)+m.cos(2*m.pi*x)))
-    #return x*x + y*y
+    return x*x + y*y
 
 def population_generation(population):
     for j in range(POPULATION_SIZE):
@@ -88,15 +88,18 @@ def selection():
                 pop_fit[temp]['flag'] = True
 
 def crossover(matingpool,bit_length,next_gen,check):
-    #print 'check is ' + str(check)
+
     for i in range(0,crossover_ratio,2):
         counter = 0
         breaker = True
         temp1=matingpool[i]
         temp2=matingpool[i+1]
-    #    print str(temp1) + '|' + str(temp2)
-        while (counter<100) and (breaker==True):
-            #print 'counter is '+ str(counter)
+
+        before_diffrence1 = find_diffrence(next_gen[0],temp1)
+        before_diffrence2 = find_diffrence(next_gen[0],temp2)
+
+        while (counter<no_of_try_in_hillclimbing) and (breaker==True):
+
 
             for j in range(bit_length):
                 if(uniform(0,1)>crossover_probability):
@@ -104,30 +107,24 @@ def crossover(matingpool,bit_length,next_gen,check):
                         temp1 = temp1^2**((bit_length-1)-j) #swapping bits
                         temp2 = temp2^2**((bit_length-1)-j) #swapping bits
 
-            if check == 0:
-                fitness_after1 = fitness(temp1,max_values[check])
-                fitness_after2 = fitness(temp2,max_values[check])
-                fitness_before1 = fitness(matingpool[i],max_values[check])
-                fitness_before2 = fitness(matingpool[i+1],max_values[check])
+            after_diffrence1 = find_diffrence(next_gen[0],temp1)
+            after_diffrence2 = find_diffrence(next_gen[0],temp2)
 
-            if check == 1:
-                fitness_after1 = fitness(max_values[check],temp1)
-                fitness_after2 = fitness(max_values[check],temp2)
-                fitness_before1 = fitness(max_values[check],matingpool[i])
-                fitness_before2 = fitness(max_values[check],matingpool[i+1])
-
-            if (fitness_after1>fitness_before1) and (fitness_after2>fitness_before2):
-                #print 'fitness increased'
+            if (after_diffrence1 < before_diffrence1) and (after_diffrence2 < before_diffrence2):
                 next_gen.append(temp1)
                 next_gen.append(temp2)
-            #    print 'improved' + str(temp1) + '|' + str(temp2)
                 breaker = False
             counter+=1
 
-        if counter == 100:
+        if counter == no_of_try_in_hillclimbing:
             next_gen.append(matingpool[i])
             next_gen.append(matingpool[i+1])
-        #    print 'same' + str(matingpool[i]) + '|' + str(matingpool[i+1])
+
+def find_diffrence(no1, no2):
+    if no1 < no2 :
+        return abs(no2 - no1)
+    else:
+        return abs(no1-no2)
 
 def mutation(left_for_mutation,bit_length):
     for i in range(mutation_ratio):
@@ -225,7 +222,6 @@ print '--------------------------------improvement---------------------'
 print 'initial fitness=%f' %fitness_track[0]
 print 'final fitness=%f' %pop_fit[0]['fitness']
 print 'improvement in fitness = %f' %(pop_fit[0]['fitness']-fitness_track[0])
-
 
 plt.scatter(range(no_of_generations+2),fitness_track)
 plt.show()
