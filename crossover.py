@@ -2,6 +2,7 @@ from random import randrange,uniform
 import matplotlib.pyplot as plt
 import numpy as np
 import math as m
+import time
 
 
  # TODO MOGA
@@ -23,9 +24,9 @@ print reproduction_ratio
 print crossover_ratio
 print mutation_ratio
 ########################################################
-LOWER_LIMIT = [0,0]
-UPPER_LIMIT = [3,3]
-no_of_generations =175
+LOWER_LIMIT = [-2,-2]
+UPPER_LIMIT = [2,2]
+no_of_generations =150
 count =0
 fitness_track = []
 fitness_average = []
@@ -47,16 +48,16 @@ population = [population_x,population_y]
 left_for_mutation_x = []
 left_for_mutation_y = []
 left_for_mutation = [left_for_mutation_x,left_for_mutation_y]
-
+op=0.3;
 
 
 #~~~~~~~~~~~~~~~~~~~~~~FUNCTIONS~~~~~~~~~~~~~~~~~~~~
 def fitness(x,y):
     x=x/float(precsion_level)
     y=y/float(precsion_level)
-    #return 1601-((1-x)*(1-x)+100*(y-x*x)*(y-x*x))
+    return 1601-((1-x)*(1-x)+100*(y-x*x)*(y-x*x))
     #return 46-(20+x*x+y*y-10*(m.cos(2*m.pi*x)+m.cos(2*m.pi*x)))
-    return x*x + y*y
+    #return x*x + y*y
 
 def population_generation(population):
     for j in range(POPULATION_SIZE):
@@ -71,7 +72,6 @@ def population_generation(population):
 
 def scale(start_point,UPPER_LIMIT,LOWER_LIMIT,POPULATION_SIZE,UPPER_LIMIT_current,LOWER_LIMIT_current,population):
     for i in range(start_point,POPULATION_SIZE):
-        #population[i] = LOWER_LIMIT*precsion_level+population[i]*((UPPER_LIMIT*precsion_level-LOWER_LIMIT*precsion_level)/float(2**LENGTH_OF_BIT_STRING-1))
         population[i] = (((population[i] - LOWER_LIMIT_current) * (UPPER_LIMIT*precsion_level - LOWER_LIMIT*precsion_level)) / (UPPER_LIMIT_current - LOWER_LIMIT_current)) + LOWER_LIMIT*precsion_level
         population[i] = int(population[i])
 
@@ -159,6 +159,7 @@ solution = np.zeros((POPULATION_SIZE,),dtype = type_solution)
 print '------------------------------initial population----------------'
 get_solution()
 print solution
+print pop_fit['fitness']
 
 fitness_track.append(float(pop_fit['fitness'][0]))
 
@@ -207,10 +208,21 @@ while count<=no_of_generations:
     for i in range(no_of_variables):
         population[i]=next_gen[i]
 
+
     get_fitness()
     pop_fit = np.sort(pop_fit,order='fitness')[::-1]
     fitness_track.append(float(pop_fit['fitness'][0]))
     fitness_average.append(float(np.average(pop_fit['fitness'])))
+    op+=1.0/no_of_generations;
+    if op>1.0:
+        op =1
+    plt.ion()
+    if count%2 == 0:
+        plt.scatter(range(POPULATION_SIZE),pop_fit['fitness'],alpha = op,color = 'red')
+    else:
+        plt.scatter(range(POPULATION_SIZE),pop_fit['fitness'],alpha = op,color = 'blue')
+    plt.draw()
+    time.sleep(0.001)
     count+=1
 
 print '------------------------------final population------------------'
@@ -223,6 +235,8 @@ print 'initial fitness=%f' %fitness_track[0]
 print 'final fitness=%f' %pop_fit[0]['fitness']
 print 'improvement in fitness = %f' %(pop_fit[0]['fitness']-fitness_track[0])
 
+plt.clf()
+plt.ioff()
 plt.scatter(range(no_of_generations+2),fitness_track)
 plt.show()
 plt.scatter(range(no_of_generations+2),fitness_average)
